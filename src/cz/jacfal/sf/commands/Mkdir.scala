@@ -24,7 +24,14 @@ class Mkdir(name: String) extends Command {
 
   def doMkdir(state: State, name: String): State = {
 
-    def updateStructure(currentDirectory: Directory, path: List[String], newEntry: DirEntry): Directory = ???
+    def updateStructure(currentDirectory: Directory, path: List[String], newEntry: DirEntry): Directory = {
+      if (path.isEmpty) {
+        currentDirectory.addEntry(newEntry)
+      } else {
+        val oldEntry: Directory = currentDirectory.findEntry(path.head).asDirectory
+        currentDirectory.replaceEntry(oldEntry.name, updateStructure(oldEntry, path.tail, newEntry))
+      }
+    }
 
     // 1 . all the directories in the full path
     val allDirsInPath: List[String] = state.workingDirectory.getAllFoldersInThePath
