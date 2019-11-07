@@ -1,5 +1,7 @@
 package cz.jacfal.sf.files
 
+import cz.jacfal.sf.filesystem.FilesystemException
+
 import scala.annotation.tailrec
 
 class Directory(override val parentPath: String, override val name: String, val contents: List[DirEntry])
@@ -40,6 +42,8 @@ class Directory(override val parentPath: String, override val name: String, val 
   def asDirectory: Directory = this
 
   override def getType: String = "Directory"
+
+  override def asFile: File = throw new FilesystemException("A directory cannot be converted to a file")
 }
 
 object Directory {
