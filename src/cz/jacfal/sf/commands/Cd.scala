@@ -16,9 +16,9 @@ class Cd(dir: String) extends Command {
         dir
       else { // non-abs path
         if (state.workingDirectory.isRoot)
-          state.workingDirectory + dir
+          state.workingDirectory.path + dir
         else
-          state.workingDirectory + Directory.SEPARATOR + dir
+          state.workingDirectory.path + Directory.SEPARATOR + dir
       }
     }
 
@@ -46,7 +46,35 @@ class Cd(dir: String) extends Command {
       }
     }
 
+    @tailrec
+    def collapseRelativeTokens(path: List[String], result: List[String]): List[String] = {
+      if (path.isEmpty)
+        result
+      else if (".".equals(path.head))
+        collapseRelativeTokens(path.tail, result)
+      else if ("..".equals(path.head)) {
+        if (path.isEmpty)
+          null
+        else
+          collapseRelativeTokens(path.tail, result.init)
+      } else {
+        collapseRelativeTokens(path.tail, result :+ path.head)
+      }
+    }
+
     val tokens: List[String] = path.substring(1).split(Directory.SEPARATOR).toList
-    findEntryHelper(root, tokens)
+
+    // eliminate all collapse relative tokens
+    /*
+      ["a", "."] => ["a"] - single dots are omitted
+      ["a", ".."] => ["a", "a parent"]
+     */
+
+    val newTokens = collapseRelativeTokens(tokens, List())
+
+    if (newTokens == null)
+      null
+    else
+      findEntryHelper(root, newTokens)
   }
 }
